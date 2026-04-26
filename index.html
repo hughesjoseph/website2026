@@ -1205,10 +1205,13 @@ function render(){
       const n=parseInt(getNStr(p.n))||i+1;
       const s=picseed(n);
       const op=p.future?'opacity:.45':'';
+      const num=(parseInt(p.n.replace(/[^0-9]/g,''))||i+1).toString().padStart(3,'0');
+      const slug=p.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'');
+      const localSrc='images/projects/'+num+'-'+slug+'/1.jpg';
       return `<div class="gc" style="${op}" onclick="openPP(${i})">
         <div class="gc-visual">
-          <img src="https://picsum.photos/seed/${s}/600/800" loading="lazy" alt="${p.title}"
-            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+          <img src="${localSrc}" loading="lazy" alt="${p.title}"
+            onerror="this.src='https://picsum.photos/seed/${s}/600/800'">
           <div class="gc-colorblock" style="background:${colr(n)};display:none"></div>
         </div>
         <div class="gc-info">
@@ -1324,8 +1327,12 @@ function openPP(idx){
     `<div class="cred-g"><span class="cred-role">Year</span><span class="cred-name">${p.year}</span></div>`+
     `<div class="cred-g"><span class="cred-role">Studio</span><span class="cred-name">RIG / 16-1XB Amstelpark Atelier</span></div>`;
 
+  const ppNum=(parseInt(p.n.replace(/[^0-9]/g,''))||idx+1).toString().padStart(3,'0');
+  const ppSlug=p.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'');
+  const ppFolder='images/projects/'+ppNum+'-'+ppSlug+'/';
   document.getElementById('ppImages').innerHTML=[0,1,2,3].map(i=>
-    `<div class="pp-img-item"><img src="https://picsum.photos/seed/${s+i}/900/600" loading="${i===0?'eager':'lazy'}" alt=""></div>`
+    `<div class="pp-img-item"><img src="${i===0?ppFolder+'1.jpg':'https://picsum.photos/seed/'+(s+i)+'/900/600'}" loading="${i===0?'eager':'lazy'}" alt=""
+      onerror="this.src='https://picsum.photos/seed/${s+i}/900/600'"></div>`
   ).join('');
 
   const next=items[(idx+1)%items.length];
