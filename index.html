@@ -1007,7 +1007,6 @@ body.reduce-motion .sp-hint{animation:none}
 
 <script>
 
-// img: 'images/projects/1-project-name.jpg'  ← add this field to any project to use your own image
 const projects = [
   {n:"000",title:"Disoriented",desc:"Lost as a design strategy",types:["Object","Installation"],year:2023},
   {n:"000",title:"Mucho Design Edition",desc:"Research published as artefact",types:["Research","Cultural"],year:2022},
@@ -1142,14 +1141,6 @@ const wishList = [
 
 const COLORS=['#1c1c1e','#2c1810','#0d2137','#1a2e1a','#2e1a1a','#1a1a2e','#2e2414','#141e2e','#2e1e2e','#0d2929','#291d0d','#1e2e1e','#2e1e0d','#0d1e29','#291e1e','#1e291e','#b8a898','#8fa8b8','#a8b89a','#b8988a'];
 const picseed=n=>n*7+13;
-function imgSrc(p, i, w, h){
-  // Use project's own image if set, else local path if exists (won't 404 gracefully), else picsum
-  if(p.img) return p.img;
-  const slug = p.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'');
-  const local = 'images/projects/' + p.n.replace(/^0+/,'') + '-' + slug + '.jpg';
-  return local; // will trigger onerror fallback to picsum if missing
-}
-function picsumFallback(n){ return 'https://picsum.photos/seed/'+picseed(n)+'/800/1000'; }
 const colr=n=>COLORS[n%COLORS.length];
 
 let view='grid',sort='num',sbMode='show',searchQ='',projIdx=-1,isDark=true;
@@ -1196,7 +1187,7 @@ function renderSB(){
   document.getElementById('sbList').innerHTML=items.map((p,i)=>{
     const s=getSeed(p,i);
     return `<div class="sb-item" onclick="openPP(${i})">
-      <img class="sb-thumb" src="${p.img ? p.img : 'images/thumbs/'+p.n.replace(/^0+/,'')+'.jpg'}" onerror="this.src='https://picsum.photos/seed/${s}/88/88'" loading="lazy" alt="">
+      <img class="sb-thumb" src="https://picsum.photos/seed/${s}/88/88" loading="lazy" alt="">
       <div class="sb-info"><div class="sb-ititle">${p.title}</div><div class="sb-idesc">${p.desc}</div></div>
     </div>`;
   }).join('');
@@ -1216,8 +1207,8 @@ function render(){
       const op=p.future?'opacity:.45':'';
       return `<div class="gc" style="${op}" onclick="openPP(${i})">
         <div class="gc-visual">
-          <img src="${imgSrc(p,i,600,800)}" loading="lazy" alt="${p.title}"
-            onerror="this.src=picsumFallback(${n})">
+          <img src="https://picsum.photos/seed/${s}/600/800" loading="lazy" alt="${p.title}"
+            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
           <div class="gc-colorblock" style="background:${colr(n)};display:none"></div>
         </div>
         <div class="gc-info">
@@ -1333,10 +1324,9 @@ function openPP(idx){
     `<div class="cred-g"><span class="cred-role">Year</span><span class="cred-name">${p.year}</span></div>`+
     `<div class="cred-g"><span class="cred-role">Studio</span><span class="cred-name">RIG / 16-1XB Amstelpark Atelier</span></div>`;
 
-  document.getElementById('ppImages').innerHTML=[0,1,2,3].map(i=>{
-    const ppSrc = i===0 && p.img ? p.img : 'https://picsum.photos/seed/'+(s+i)+'/900/600';
-    return '<div class="pp-img-item"><img src="'+ppSrc+'" loading="'+(i===0?'eager':'lazy')+'" alt=""></div>';
-  }).join('');
+  document.getElementById('ppImages').innerHTML=[0,1,2,3].map(i=>
+    `<div class="pp-img-item"><img src="https://picsum.photos/seed/${s+i}/900/600" loading="${i===0?'eager':'lazy'}" alt=""></div>`
+  ).join('');
 
   const next=items[(idx+1)%items.length];
   document.getElementById('ppNextName').textContent=next?next.title:'';
