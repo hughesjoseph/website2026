@@ -1006,6 +1006,14 @@ body.reduce-motion .sp-hint{animation:none}
 
 
 <script>
+// ── IMAGE MANIFEST ──
+let imageManifest = {};
+let manifestLoaded = false;
+fetch('images/manifest.json')
+  .then(r => r.ok ? r.json() : {})
+  .then(data => { imageManifest = data; manifestLoaded = true; render(); })
+  .catch(() => { manifestLoaded = true; render(); });
+
 
 const projects = [
   {n:"000",title:"Disoriented",desc:"Lost as a design strategy",types:["Object","Installation"],year:2023},
@@ -1449,12 +1457,6 @@ render();
 
 
 
-// ── IMAGE MANIFEST ──
-let imageManifest = {};
-fetch('images/manifest.json')
-  .then(r => r.ok ? r.json() : {})
-  .then(data => { imageManifest = data; render(); })
-  .catch(() => { render(); });
 
 function getProjectImg(p, i){
   if(p.img) return p.img;
