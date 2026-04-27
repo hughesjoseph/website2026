@@ -779,14 +779,14 @@ body.reduce-motion .sp-hint{animation:none}
 <body>
 
 <!-- SPLASH -->
-<div id="splash">
+<div id="splash" onclick="dismissSplash()">
   <div class="sp-bg"></div>
   <div class="sp-glass"></div>
-  <div class="sp-topbar">
+  <div class="sp-topbar" onclick="event.stopPropagation()">
     <button class="sp-show-pill" onclick="dismissSplash()">Show all projects</button>
-    <button class="sp-ios-tog on" id="splashTog" onclick="event.stopPropagation();toggleSplashDark()"></button>
+    <button class="sp-ios-tog on" id="splashTog" onclick="toggleSplashDark()"></button>
   </div>
-  <div class="sp-content" onclick="dismissSplash()">
+  <div class="sp-content">
     <div class="sp-name">Joseph Hughes &mdash; Selected Work 2026</div>
     <div class="sp-card">
       <div class="sp-bio">
@@ -1009,6 +1009,7 @@ body.reduce-motion .sp-hint{animation:none}
 // ── IMAGE MANIFEST ──
 let imageManifest = {};
 let manifestLoaded = false;
+let splashDone = false;
 fetch('images/manifest.json')
   .then(r => r.ok ? r.json() : {})
   .then(data => { imageManifest = data; manifestLoaded = true; render(); })
@@ -1478,7 +1479,6 @@ function toggleSec(bodyId, chevId){
 }
 
 // ── SPLASH ──
-let splashDone = false;
 function dismissSplash(){
   if(splashDone) return;
   splashDone = true;
