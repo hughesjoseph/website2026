@@ -1187,7 +1187,8 @@ function renderSB(){
   document.getElementById('sbList').innerHTML=items.map((p,i)=>{
     const s=getSeed(p,i);
     return `<div class="sb-item" onclick="openPP(${i})">
-      <img class="sb-thumb" src="https://picsum.photos/seed/${s}/88/88" loading="lazy" alt="">
+      <img class="sb-thumb" src="${getProjectImg(p,i)}" loading="lazy" alt=""
+        onerror="this.style.display='none'">
       <div class="sb-info"><div class="sb-ititle">${p.title}</div><div class="sb-idesc">${p.desc}</div></div>
     </div>`;
   }).join('');
@@ -1207,12 +1208,13 @@ function render(){
       const op=p.future?'opacity:.45':'';
       const num=(parseInt(p.n.replace(/[^0-9]/g,''))||i+1).toString().padStart(3,'0');
       const slug=p.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'');
-      const localSrc='images/projects/'+num+'-'+slug+'/1.jpg';
+      const localSrc=getProjectImg(p,i);
+      const fallbackColor=colr(parseInt(p.n.replace(/[^0-9]/g,''))||i+1);
       return `<div class="gc" style="${op}" onclick="openPP(${i})">
         <div class="gc-visual">
           <img src="${localSrc}" loading="lazy" alt="${p.title}"
-            onerror="this.src='https://picsum.photos/seed/${s}/600/800'">
-          <div class="gc-colorblock" style="background:${colr(n)};display:none"></div>
+            onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+          <div class="gc-colorblock" style="background:${fallbackColor};display:none"></div>
         </div>
         <div class="gc-info">
           <div class="gc-num">${p.n}</div>
@@ -1330,9 +1332,10 @@ function openPP(idx){
   const ppNum=(parseInt(p.n.replace(/[^0-9]/g,''))||idx+1).toString().padStart(3,'0');
   const ppSlug=p.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'');
   const ppFolder='images/projects/'+ppNum+'-'+ppSlug+'/';
+  const ppHero=getProjectImg(p,idx);
   document.getElementById('ppImages').innerHTML=[0,1,2,3].map(i=>
-    `<div class="pp-img-item"><img src="${i===0?ppFolder+'1.jpg':'https://picsum.photos/seed/'+(s+i)+'/900/600'}" loading="${i===0?'eager':'lazy'}" alt=""
-      onerror="this.src='https://picsum.photos/seed/${s+i}/900/600'"></div>`
+    `<div class="pp-img-item"><img src="${i===0?ppHero:'images/projects/'+ppNum+'-'+ppSlug+'/'+(i+1)+'.jpg'}" loading="${i===0?'eager':'lazy'}" alt=""
+      onerror="this.style.display='none'"></div>`
   ).join('');
 
   const next=items[(idx+1)%items.length];
@@ -1430,7 +1433,23 @@ render();
 
 
 
-// ── COLLAPSIBLE SECTIONS ──
+// ── IMAGE MANIFEST ──
+let imageManifest = {};
+fetch('images/manifest.json')
+  .then(r => r.ok ? r.json() : {})
+  .then(data => { imageManifest = data; render(); })
+  .catch(() => { render(); });
+
+function getProjectImg(p, i){
+  if(p.img) return p.img;
+  const num = (parseInt(p.n.replace(/[^0-9]/g,''))||i+1).toString().padStart(3,'0');
+  const slug = p.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'');
+  const folder = num+'-'+slug;
+  // check manifest first
+  if(imageManifest[folder]) return imageManifest[folder];
+  // fallback: try 1.jpg directly
+  return 'images/projects/'+folder+'/1.jpg';
+}
 function toggleSec(bodyId, chevId){
   const body = document.getElementById(bodyId);
   const chev = document.getElementById(chevId);
