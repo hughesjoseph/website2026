@@ -1255,11 +1255,10 @@ function render(){
       const chevId = 'lchev'+gi;
       const rows = entries.map(({p,i})=>{
         const n=parseInt(getNStr(p.n))||i+1;
-        const s=picseed(n);
         const tags=p.types.map(t=>`<span class="lr-tag">${t}</span>`).join('');
         const op=p.future?'opacity:.45':'';
         return `<div class="lr" style="${op}" onclick="openPP(${i})"
-            onmouseenter="showHov(event,${s})" onmousemove="moveHov(event)" onmouseleave="hideHov()">
+            onmouseenter="showHovIdx(event,${i})" onmousemove="moveHov(event)" onmouseleave="hideHov()">
           <span class="lr-num">${p.n}</span>
           <div>
             <div class="lr-title">${p.title}${p.soon?' <span style="font-size:11px;color:var(--tint)"> — soon</span>':''}</div>
@@ -1288,10 +1287,18 @@ function render(){
 }
 
 // hover preview
-function showHov(e,s){
+function showHov(e,p,i){
   const el=document.getElementById('hprev');
-  document.getElementById('hprevImg').src=`https://picsum.photos/seed/${s}/140/180`;
+  const src=getProjectImg(p,i);
+  document.getElementById('hprevImg').src=src;
+  document.getElementById('hprevImg').onerror=function(){el.classList.remove('on');};
   el.classList.add('on');moveHov(e);
+}
+function showHovIdx(e,idx){
+  const items=getItems();
+  const p=items[idx];
+  if(!p) return;
+  showHov(e,p,idx);
 }
 function moveHov(e){
   const el=document.getElementById('hprev');
@@ -1366,21 +1373,30 @@ document.addEventListener('keydown',e=>{
 let rItems=[],rIdx=0,rPlay=true,rTimer=null,rProgI=null,rProg=0;
 const RD=4000;
 function initReel(){
-  rItems=projects.slice(0,40);rIdx=0;
+  // Only show projects that have real images
+  const all=getItems();
+  rItems=all.filter((p,i)=>{
+    const num=(parseInt(p.n.replace(/[^0-9]/g,''))||i+1).toString().padStart(3,'0');
+    const slug=p.title.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/-+$/,'');
+    return imageManifest[num+'-'+slug];
+  });
+  if(!rItems.length) rItems=all.slice(0,20);
+  rIdx=0;
   document.getElementById('reelThumbs').innerHTML=rItems.map((p,i)=>{
-    const n=parseInt(getNStr(p.n))||i+1;
-    return `<img class="reel-thumb${i===0?' on':''}" src="https://picsum.photos/seed/${picseed(n)}/160/100" onclick="goReel(${i})" id="rt${i}" alt="">`;
+    const src=getProjectImg(p,i);
+    return `<img class="reel-thumb${i===0?' on':''}" src="${src}" onclick="goReel(${i})" id="rt${i}" alt=""
+      onerror="this.style.display='none'">`;
   }).join('');
   showReel(0,false);playReel();
 }
 function showReel(idx,anim){
   const p=rItems[idx];
   const n=parseInt(getNStr(p.n))||idx+1;
-  const s=picseed(n);
+  const src=getProjectImg(p,idx);
   const a=document.getElementById('reelA');
   const b=document.getElementById('reelB');
-  if(anim){b.src=`https://picsum.photos/seed/${s}/900/540`;b.style.opacity='1';setTimeout(()=>{a.src=b.src;b.style.opacity='0';},800);}
-  else{a.src=`https://picsum.photos/seed/${s}/900/540`;}
+  if(anim){b.src=src;b.style.opacity='1';setTimeout(()=>{a.src=b.src;b.style.opacity='0';},800);}
+  else{a.src=src;}
   document.getElementById('reelTitle').textContent=p.n+' — '+p.title;
   document.getElementById('reelSub').textContent=p.types.join(' · ')+(p.types.length?' · ':'')+p.year;
   document.getElementById('reelCnt').textContent=(idx+1)+' / '+rItems.length;
